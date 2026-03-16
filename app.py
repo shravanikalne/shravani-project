@@ -9,8 +9,7 @@ from sklearn.preprocessing import StandardScaler
 st.title("🚗 Car Price Predictor (KNN Model)")
 
 # -----------------------------
-# Example training data
-# Features: [model_encoded, model_year, mileage, engine, accident, clean_title]
+# Model Encoding
 # -----------------------------
 model_encoding = {
     "Toyota": 0,
@@ -18,12 +17,15 @@ model_encoding = {
     "Ford": 2
 }
 
+# -----------------------------
+# Training Dataset
+# -----------------------------
 X = np.array([
     [0, 2015, 50000, 1500, 0, 1],
     [1, 2017, 30000, 1600, 0, 1],
     [2, 2012, 80000, 1400, 1, 0],
     [0, 2020, 10000, 2000, 0, 1],
-    [1, 2018, 40000, 1800, 1, 1],
+    [1, 2018, 40000, 1800, 1, 1]
 ])
 
 y = np.array([
@@ -35,12 +37,14 @@ y = np.array([
 ])
 
 # -----------------------------
-# Feature Scaling (important for KNN)
+# Feature Scaling
 # -----------------------------
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# Train Model
+# -----------------------------
+# Train KNN Model
+# -----------------------------
 knn = KNeighborsRegressor(n_neighbors=3)
 knn.fit(X_scaled, y)
 
@@ -50,7 +54,7 @@ knn.fit(X_scaled, y)
 st.header("Enter Car Details")
 
 model_name = st.selectbox(
-    "Model Name",
+    "Car Brand",
     list(model_encoding.keys())
 )
 
@@ -64,12 +68,14 @@ model_year = st.number_input(
 mileage = st.number_input(
     "Mileage (km)",
     min_value=0,
+    max_value=300000,
     value=50000
 )
 
 engine = st.number_input(
     "Engine Size (cc)",
     min_value=500,
+    max_value=5000,
     value=1500
 )
 
@@ -83,36 +89,39 @@ clean_title = st.selectbox(
     ["No", "Yes"]
 )
 
-# Convert categorical values
-accident = 0 if accident == "No" else 1
-clean_title = 0 if clean_title == "No" else 1
+# -----------------------------
+# Encode Inputs
+# -----------------------------
 model_encoded = model_encoding[model_name]
 
-# Prepare input features
+accident_value = 1 if accident == "Yes" else 0
+clean_title_value = 1 if clean_title == "Yes" else 0
+
+# -----------------------------
+# Prepare Input Data
+# -----------------------------
 features = np.array([
-    [model_encoded, model_year, mileage, engine, accident, clean_title]
+    [model_encoded, model_year, mileage, engine, accident_value, clean_title_value]
 ])
 
-# Scale features
 features_scaled = scaler.transform(features)
 
 # -----------------------------
 # Prediction
 # -----------------------------
 if st.button("Predict Price"):
+
     prediction = knn.predict(features_scaled)
 
     st.success(f"💰 Predicted Price: ${prediction[0]:,.2f}")
 
 # -----------------------------
-# Show training data
+# Show Training Data
 # -----------------------------
 if st.checkbox("Show Training Data"):
+
     st.subheader("Training Features")
     st.write(X)
 
     st.subheader("Training Prices")
-    st.write(y)
-
-    st.write("Training Targets (Price):")
     st.write(y)
