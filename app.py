@@ -3,23 +3,23 @@ import numpy as np
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.preprocessing import StandardScaler
 
-# -----------------------------
+# -----------------------
 # Title
-# -----------------------------
+# -----------------------
 st.title("🚗 Car Price Predictor (KNN Model)")
 
-# -----------------------------
-# Model Encoding
-# -----------------------------
+# -----------------------
+# Encode Car Brands
+# -----------------------
 model_encoding = {
     "Toyota": 0,
     "Honda": 1,
     "Ford": 2
 }
 
-# -----------------------------
-# Training Dataset
-# -----------------------------
+# -----------------------
+# Sample Training Data
+# -----------------------
 X = np.array([
     [0, 2015, 50000, 1500, 0, 1],
     [1, 2017, 30000, 1600, 0, 1],
@@ -36,29 +36,26 @@ y = np.array([
     20000
 ])
 
-# -----------------------------
+# -----------------------
 # Feature Scaling
-# -----------------------------
+# -----------------------
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# -----------------------------
-# Train KNN Model
-# -----------------------------
-knn = KNeighborsRegressor(n_neighbors=3)
-knn.fit(X_scaled, y)
+# -----------------------
+# Train Model
+# -----------------------
+model = KNeighborsRegressor(n_neighbors=3)
+model.fit(X_scaled, y)
 
-# -----------------------------
+# -----------------------
 # User Inputs
-# -----------------------------
+# -----------------------
 st.header("Enter Car Details")
 
-model_name = st.selectbox(
-    "Car Brand",
-    list(model_encoding.keys())
-)
+brand = st.selectbox("Car Brand", list(model_encoding.keys()))
 
-model_year = st.number_input(
+year = st.number_input(
     "Model Year",
     min_value=1990,
     max_value=2026,
@@ -79,49 +76,38 @@ engine = st.number_input(
     value=1500
 )
 
-accident = st.selectbox(
-    "Accident History",
-    ["No", "Yes"]
-)
+accident = st.selectbox("Accident History", ["No", "Yes"])
 
-clean_title = st.selectbox(
-    "Clean Title",
-    ["No", "Yes"]
-)
+clean_title = st.selectbox("Clean Title", ["No", "Yes"])
 
-# -----------------------------
-# Encode Inputs
-# -----------------------------
-model_encoded = model_encoding[model_name]
-
+# -----------------------
+# Convert Inputs
+# -----------------------
+brand_encoded = model_encoding[brand]
 accident_value = 1 if accident == "Yes" else 0
-clean_title_value = 1 if clean_title == "Yes" else 0
+title_value = 1 if clean_title == "Yes" else 0
 
-# -----------------------------
-# Prepare Input Data
-# -----------------------------
-features = np.array([
-    [model_encoded, model_year, mileage, engine, accident_value, clean_title_value]
+# -----------------------
+# Prepare Input
+# -----------------------
+input_data = np.array([
+    [brand_encoded, year, mileage, engine, accident_value, title_value]
 ])
 
-features_scaled = scaler.transform(features)
+input_scaled = scaler.transform(input_data)
 
-# -----------------------------
+# -----------------------
 # Prediction
-# -----------------------------
+# -----------------------
 if st.button("Predict Price"):
 
-    prediction = knn.predict(features_scaled)
+    price = model.predict(input_scaled)
 
-    st.success(f"💰 Predicted Price: ${prediction[0]:,.2f}")
+    st.success(f"💰 Predicted Car Price: ${price[0]:,.2f}")
 
-# -----------------------------
-# Show Training Data
-# -----------------------------
+# -----------------------
+# Optional: Show Dataset
+# -----------------------
 if st.checkbox("Show Training Data"):
-
-    st.subheader("Training Features")
-    st.write(X)
-
-    st.subheader("Training Prices")
-    st.write(y)
+    st.write("Features:", X)
+    st.write("Prices:", y)
